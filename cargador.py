@@ -1,13 +1,12 @@
 ***REMOVED***
 import re
 ***REMOVED***
+import gcsfs
 
 
 class Cargador:
 
-    def cargar_tablas(self, uri):
-        files = [f for f in os.listdir(
-            uri) if os.path.isfile(os.path.join(uri, f))]
+    def cargar_tablas(self, files):
         tables = dict()
         for f in files:
             match1 = re.search(r'\d+_', f)
@@ -26,7 +25,7 @@ class Cargador:
 
 ***REMOVED***
     cargador = Cargador()
-    script_dir = os.path.dirname(__file__)
-    rel_path = 'data'
-    tables = cargador.cargar_tablas(os.path.join(script_dir, rel_path))
+    fs = gcsfs.GCSFileSystem()
+    files = fs.ls(os.environ['FILES_PATH'])
+    tables = cargador.cargar_tablas(files)
     print(tables['2018']['Entrega_Dist_Serv_FechaOk'].head())

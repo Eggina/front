@@ -196,9 +196,9 @@ class Calculador:
 
 ***REMOVED***
     cdor = Cargador()
-    script_dir = os.path.dirname(__file__)
-    rel_path = 'data'
-    tables = cdor.cargar_tablas(os.path.join(script_dir, rel_path))
+    fs = gcsfs.GCSFileSystem()
+    files = fs.ls(os.environ['FILES_PATH'])
+    tables = cdor.cargar_tablas(files)
     calculador = Calculador()
     calculador.setear_tablas(tables)
     calculador.calcular_IPAX(['2018', '2019'], [1, 2, 3, 4, 5], [

@@ -15,6 +15,7 @@ import numpy as np
 import seaborn as sns
 from cargador import Cargador
 from calculador import Calculador
+import gcsfs
 
 
 class Main:
@@ -35,17 +36,16 @@ app.config['SECRET_KEY'] = "some_random"
 ***REMOVED***
 ***REMOVED***
 
-script_dir = os.path.dirname(__file__)
-rel_path = 'data'
+fs = gcsfs.GCSFileSystem()
+files = fs.ls(os.environ['FILES_PATH'])
 
 main = Main()
 main.setear_cargador(Cargador())
-main.setear_tablas(main.cargador.cargar_tablas(
-    os.path.join(script_dir, rel_path)))
+main.setear_tablas(main.cargador.cargar_tablas(files))
 main.setear_calculador(Calculador())
 
 
-***REMOVED***
+@ app.route('/', methods=['GET', 'POST'])
 ***REMOVED***
 ***REMOVED***
         session['idlineas'] = [int(id)
@@ -59,7 +59,7 @@ main.setear_calculador(Calculador())
     return render_template('home.html', main=main)
 
 
-@app.route('/plot/<ind>')
+***REMOVED***
 ***REMOVED***
     fig = create_figure(ind)
     output = io.BytesIO()
@@ -143,3 +143,7 @@ def create_figure(ind):
             axis.yaxis.label.set_size(15)
 
     return fig
+
+
+***REMOVED***
+    app.run()

@@ -1,0 +1,3 @@
+runtime: python38
+env_variables:
+  FILES_PATH: "indicadoressube.appspot.com"
