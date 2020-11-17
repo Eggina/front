@@ -2,7 +2,7 @@
 import re
 ***REMOVED***
 import numpy as np
-from cargador import Cargador
+from model.cargador import Cargador
 
 
 class Calculador:

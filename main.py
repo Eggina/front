@@ -13,8 +13,8 @@ from time import strptime, strftime
 import numpy as np
 ***REMOVED***
 import seaborn as sns
-from cargador import Cargador
-from calculador import Calculador
+from model.cargador import Cargador
+from model.calculador import Calculador
 import gcsfs
 
 

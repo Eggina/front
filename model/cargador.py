@@ -12,14 +12,15 @@ class Cargador:
             match1 = re.search(r'\d+_', f)
             match2 = re.search(r'_\S+.csv', f)
             if match1 is not None and match2 is not None:
-                year = f[:match1.end()-1]
-                name = f[match2.start()+1:-4]
+                year = match1.group()[:-1]
+                name = match2.group()[1:-4]
 
                 if not year in tables:
                     tables[year] = dict()
-                print(match2.group())
-                tables[year][name] = pd.read_csv(os.path.join(
-                    uri, '{}_{}.csv'.format(year, name)), sep=';', decimal=",")
+                print(year)
+                print(name)
+                tables[year][name] = pd.read_csv(
+                    'gs://' + f, sep=';', decimal=",")
         return tables
 
 
