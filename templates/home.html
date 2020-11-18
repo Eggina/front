@@ -20,7 +20,7 @@
         <div class="container-fluid">
             <button type="button" id="sidebarCollapse" class="btn btn-info">
                 <i class="fas fa-align-left"></i>
-                <span>Toggle Sidebar</span>
+                <span>Ocultar opciones</span>
             </button>
         </div>
     </nav>
@@ -32,10 +32,11 @@
                 <div class="form-group">
                     <label for="lineas">Línea</label>
                     <div id="lineas">
-                        {% for k in main.tablas['2018']['Lineas'].itertuples() %}
+                        {% for k in director.tablas['2018']['Lineas'].itertuples() %}
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="lineas" value="{{ k['ID_LINEA'] }}"
-                                id="{{ k['ID_LINEA'] }}">
+                                id="{{ k['ID_LINEA'] }}"
+                                {{"checked" if k['ID_LINEA'] in session.get('idlineas', []) else ""}}>
                             <label class="form-check-label" for="{{ k['ID_LINEA'] }}">
                                 {{ k['NOMBRE'] }}
                             </label>
@@ -55,29 +56,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="año">Año</label>
-                    <select name="año" id="año" class="form-control">
-                        {% for año in main.calculador.obtener_años_validos() %}
-                        <option value={{año}}>{{año}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label for="inicio">Desde</label>
                     <input type="month" name="inicio" id="inicio" class="form-control"
-                        start="{{main.calculador.obtener_fecha_mas_temprana().strftime('%Y-%m')}}"
-                        value="{{main.calculador.obtener_fecha_mas_temprana().strftime('%Y-%m')}}">
+                        start="{{director.calculador.obtener_fecha_mas_temprana().strftime('%Y-%m')}}"
+                        value="{{director.calculador.obtener_fecha_mas_temprana().strftime('%Y-%m')}}">
                 </div>
 
                 <div class="form-group">
                     <label for="fin">Hasta</label>
                     <input type="month" name="fin" id="fin" class="form-control"
-                        start="{{main.calculador.obtener_fecha_mas_tardia().strftime('%Y-%m')}}"
-                        value="{{main.calculador.obtener_fecha_mas_tardia().strftime('%Y-%m')}}">
+                        start="{{director.calculador.obtener_fecha_mas_tardia().strftime('%Y-%m')}}"
+                        value="{{director.calculador.obtener_fecha_mas_tardia().strftime('%Y-%m')}}">
                 </div>
 
-                <input type="submit" class="btn btn-primary">
+                <input type="submit" class="btn btn-primary" value="Consultar">
             </form>
 
             <script>

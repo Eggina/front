@@ -3,6 +3,7 @@ import re
 ***REMOVED***
 import numpy as np
 from model.cargador import Cargador
+from calendar import monthrange
 
 
 class Calculador:
@@ -13,6 +14,8 @@ class Calculador:
             table['Entrega_Dist_Serv_FechaOk']['FECHA_INI'] = pd.to_datetime(
                 table['Entrega_Dist_Serv_FechaOk']['FECHA_INI'], dayfirst=True)
             table['Entrega_Dist_Serv_FechaOk']['MES'] = table['Entrega_Dist_Serv_FechaOk']['FECHA_INI'].dt.month
+            table['Entrega_Dist_Serv_FechaOk']['FECHA'] = pd.to_datetime(
+                table['Entrega_Dist_Serv_FechaOk']['FECHA_INI'].apply(lambda x: x.strftime('%Y-%m')))
             table['Entrega_Dist_Serv_FechaOk'] = table['Entrega_Dist_Serv_FechaOk'].rename(
                 columns={'LINEA': 'ID_LINEA'})
             table['Entrega_dggi_tarifa']['FECHA'] = pd.to_datetime(
@@ -53,36 +56,40 @@ class Calculador:
             fecha.append(tabla['Entrega_dggi_tarifa']['FECHA'].max())
         return np.max(fecha)
 
-    def obtener_años_validos(self):
-        return self.años[1:]
+    def __calcular_Ix(self, fecha_inicio, fecha_final, idlinea, agregar_lineas, variable):
+        fecha_inicio, fecha_final, años = self.__procesar_fechas(
+            fecha_inicio, fecha_final)
 
-    def obtener_año_anterior(self, año):
-        idx = self.años.index(año)
-        return self.años[idx-1:idx+1]
+        meses = (fecha_final.year - fecha_inicio.year)*12 + \
+            (fecha_final.month - fecha_inicio.month)
 
-    def __calcular_Ix(self, años, mes, idlinea, agregar_meses, agregar_lineas, variable):
-        dfes = []
-        for i, año in enumerate(años):
-            dfes.append(self.__agrupar_agregar(self.tablas[año][variable['tabla']], [
-                'MES', 'ID_LINEA'], [variable['nombre']], variable['fun']))
-            dfes[-1] = dfes[-1].rename(
-                columns={variable['nombre']: '{}{}'.format(variable['nombre'], i)})
+        if (meses < 12):
+            return pd.DataFrame()
 
-        df = self.__procesar(self.__unir(dfes), mes, idlinea, [
-            agregar_meses, agregar_lineas])
+        df = pd.concat([self.__agrupar_agregar(self.tablas[str(año)][variable['tabla']], [
+                       'FECHA', 'ID_LINEA'], [variable['nombre']], variable['fun']) for año in años])
 
-        df['indicador'] = (df['{}{}'.format(variable['nombre'], 1)] - df['{}{}'.format(
-            variable['nombre'], 0)])/df['{}{}'.format(variable['nombre'], 0)]
-        return df
+        df = self.__procesar(
+            df, slice(fecha_inicio, fecha_final), idlinea, [False, agregar_lineas])
 
-    def calcular_IPAX(self, años, mes, idlinea, agregar_meses=False, agregar_lineas=False):
-        pax = self.__calcular_Ix(años, mes, idlinea, agregar_meses, agregar_lineas, {
-                                 'tabla': 'Entrega_dggi_tarifa', 'nombre': 'CANTIDAD_USOS', 'fun': 'sum'})
+        if agregar_lineas:
+            df['indicador'] = df.diff(periods=12)
+        else:
+            df['indicador'] = df.groupby(level=1).diff(periods=12)
+            print(df)
+
+        df['indicador'] = df['indicador'] / \
+            (df[variable['nombre']] - df['indicador'])
+        return df.dropna()
+
+    def calcular_IPAX(self, fecha_inicio, fecha_final, idlinea, agregar_lineas=False):
+        pax = self.__calcular_Ix(fecha_inicio, fecha_final, idlinea, agregar_lineas, {
+            'tabla': 'Entrega_dggi_tarifa', 'nombre': 'CANTIDAD_USOS', 'fun': 'sum'})
         pax = pax.rename(columns={'indicador': 'ipax'})
         return pax
 
-    def calcular_IKM(self, años, mes, idlinea, agregar_meses=False, agregar_lineas=False):
-        km = self.__calcular_Ix(años, mes, idlinea, agregar_meses, agregar_lineas, {
+    def calcular_IKM(self, fecha_inicio, fecha_final, idlinea, agregar_lineas=False):
+        km = self.__calcular_Ix(fecha_inicio, fecha_final, idlinea, agregar_lineas, {
             'tabla': 'Entrega_Dist_Serv_FechaOk', 'nombre': 'DISTANCIA_SERVICIO_KM', 'fun': 'sum'})
         km = km.rename(columns={'indicador': 'ikm'})
         return km
@@ -90,6 +97,8 @@ class Calculador:
     def __procesar_fechas(self, fecha1, fecha2):
         fecha1 = pd.to_datetime(fecha1)
         fecha2 = pd.to_datetime(fecha2)
+        fecha1.replace(day=1)
+        fecha2.replace(day=monthrange(fecha2.year, fecha2.month)[1])
         años = range(fecha1.year, fecha2.year + 1)
         return fecha1, fecha2, años
 
@@ -100,19 +109,13 @@ class Calculador:
         df = pd.concat([self.__agrupar_agregar(self.tablas[str(año)]['Entrega_dggi_tarifa'], ['FECHA', 'ID_LINEA'], [
             variable], 'sum') for año in años])
 
-        km = pd.concat([self.__agrupar_agregar(self.tablas[str(año)]['Entrega_Dist_Serv_FechaOk'], ['FECHA_INI', 'ID_LINEA'], [
-                       'DISTANCIA_SERVICIO_KM'], 'sum') for año in años])
-        km = km.reset_index()
-        km['FECHA'] = pd.to_datetime(
-            km['FECHA_INI'].apply(lambda x: x.strftime('%Y-%m')))
-        km = self.__agrupar_agregar(km, ['FECHA', 'ID_LINEA'], [
-                                    'DISTANCIA_SERVICIO_KM'], 'sum')
-        km = km.rename(columns={'DISTANCIA_SERVICIO_KM': 'distancia'})
+        km = pd.concat([self.__agrupar_agregar(self.tablas[str(año)]['Entrega_Dist_Serv_FechaOk'], ['FECHA', 'ID_LINEA'], [
+            'DISTANCIA_SERVICIO_KM'], 'sum') for año in años])
 
         df_km = self.__procesar(self.__unir([df, km]), slice(
             fecha_inicio, fecha_final), idlinea, [False, agregar_lineas])
 
-        df_km['indicador'] = df_km[variable]/df_km['distancia']
+        df_km['indicador'] = df_km[variable]/df_km['DISTANCIA_SERVICIO_KM']
         return df_km
 
     def calcular_IPK(self, fecha_inicio, fecha_final, idlinea, agregar_lineas=False):
@@ -132,9 +135,9 @@ class Calculador:
             fecha_inicio, fecha_final)
 
         df = pd.concat([self.__agrupar_agregar(self.tablas[str(año)]['Entrega_dggi_tarifa'], [
-                       'FECHA', 'ID_LINEA'], ['CANTIDAD_USOS', 'MONTO'], 'sum') for año in años])
+            'FECHA', 'ID_LINEA'], ['CANTIDAD_USOS', 'MONTO'], 'sum') for año in años])
         df = self.__procesar(df, slice(fecha_inicio, fecha_final), idlinea, [
-                             False, agregar_lineas])
+            False, agregar_lineas])
         df['itm'] = df['MONTO']/df['CANTIDAD_USOS']
         return df
 
@@ -159,18 +162,18 @@ class Calculador:
             fecha_inicio, fecha_final)
 
         df1 = pd.concat([self.__agrupar_agregar(self.tablas[str(año)]['Entrega_dggi_tarifa'], [
-                        'FECHA', 'ID_LINEA'], ['CANTIDAD_USOS'], 'sum') for año in años])
+            'FECHA', 'ID_LINEA'], ['CANTIDAD_USOS'], 'sum') for año in años])
         df2 = pd.concat([self.__agrupar_agregar(self.tablas[str(año)]['Entrega_dggi_tarifa'], [
-                        'FECHA', 'ID_LINEA', 'CONTRATO'], ['CANTIDAD_USOS'], 'sum') for año in años])
+            'FECHA', 'ID_LINEA', 'CONTRATO'], ['CANTIDAD_USOS'], 'sum') for año in años])
 
         df2 = df2.loc[(slice(None), slice(None), contratos)]
         df2 = self.__agrupar_agregar(df2.reset_index(), ['FECHA', 'ID_LINEA'], [
-                                     'CANTIDAD_USOS'], 'sum')
+            'CANTIDAD_USOS'], 'sum')
         df2 = df2.rename(columns={'CANTIDAD_USOS': 'CANTIDAD_USOS_AT'})
 
         df = self.__unir([df1, df2])
         df = self.__procesar(df, slice(fecha_inicio, fecha_final), idlinea, [
-                             False, agregar_lineas])
+            False, agregar_lineas])
 
         df['indicador'] = df['CANTIDAD_USOS_AT']/df['CANTIDAD_USOS']
         return df
@@ -196,8 +199,7 @@ class Calculador:
 
 ***REMOVED***
     cdor = Cargador()
-    fs = gcsfs.GCSFileSystem()
-    files = fs.ls(os.environ['FILES_PATH'])
+    files = os.listdir('./data/')
     tables = cdor.cargar_tablas(files)
     calculador = Calculador()
     calculador.setear_tablas(tables)

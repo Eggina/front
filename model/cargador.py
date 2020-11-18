@@ -1,7 +1,6 @@
 ***REMOVED***
 import re
 ***REMOVED***
-import gcsfs
 
 
 class Cargador:
@@ -17,16 +16,16 @@ class Cargador:
 
                 if not year in tables:
                     tables[year] = dict()
-                print(year)
-                print(name)
+                # tables[year][name] = pd.read_csv(
+                #     'gs://' + f, sep=';', decimal=",")
                 tables[year][name] = pd.read_csv(
-                    'gs://' + f, sep=';', decimal=",")
+                    './data/{}'.format(f), sep=';', decimal=','
+                )
         return tables
 
 
 ***REMOVED***
     cargador = Cargador()
-    fs = gcsfs.GCSFileSystem()
-    files = fs.ls(os.environ['FILES_PATH'])
+    files = os.listdir('./data/')
     tables = cargador.cargar_tablas(files)
     print(tables['2018']['Entrega_Dist_Serv_FechaOk'].head())

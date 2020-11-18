@@ -15,10 +15,17 @@ import numpy as np
 import seaborn as sns
 from model.cargador import Cargador
 from model.calculador import Calculador
-import gcsfs
 
 
-class Main:
+***REMOVED***
+
+app.config['SECRET_KEY'] = "some_random"
+***REMOVED***
+***REMOVED***
+
+
+class Director():
+
     def setear_cargador(self, cargador):
         self.cargador = cargador
 
@@ -31,35 +38,30 @@ class Main:
 
 
 ***REMOVED***
-
-app.config['SECRET_KEY'] = "some_random"
-***REMOVED***
 ***REMOVED***
 
-fs = gcsfs.GCSFileSystem()
-files = fs.ls(os.environ['FILES_PATH'])
+    # fs = gcsfs.GCSFileSystem()
+    # files = fs.ls(os.environ['FILES_PATH'])
 
-main = Main()
-main.setear_cargador(Cargador())
-main.setear_tablas(main.cargador.cargar_tablas(files))
-main.setear_calculador(Calculador())
+    files = os.listdir('./data/')
 
+    director = Director()
+    director.setear_cargador(Cargador())
+    director.setear_tablas(director.cargador.cargar_tablas(files))
+    director.setear_calculador(Calculador())
 
-@ app.route('/', methods=['GET', 'POST'])
-***REMOVED***
 ***REMOVED***
         session['idlineas'] = [int(id)
                                for id in request.form.getlist('lineas')]
 ***REMOVED***
         session['inicio'] = request.form.getlist('inicio')
         session['fin'] = request.form.getlist('fin')
-        session['año'] = request.form.getlist('año')
         print(session)
 
-    return render_template('home.html', main=main)
+    return render_template('home.html', director=director, session=session)
 
 
-***REMOVED***
+@app.route('/plot/<ind>')
 ***REMOVED***
     fig = create_figure(ind)
     output = io.BytesIO()
@@ -68,38 +70,49 @@ main.setear_calculador(Calculador())
 
 
 def create_figure(ind):
+
+    # fs = gcsfs.GCSFileSystem()
+    # files = fs.ls(os.environ['FILES_PATH'])
+
     fig = Figure(figsize=(8.09, 5), tight_layout=True)
     axis = fig.add_subplot(1, 1, 1)
 
-    if session.get('idlineas') is not None:
+    if session.get('idlineas'):
+        files = os.listdir('./data/')
+
+        director = Director()
+        director.setear_cargador(Cargador())
+        director.setear_tablas(director.cargador.cargar_tablas(files))
+        director.setear_calculador(Calculador())
+
         table = pd.DataFrame()
 
         if ind == 'ipax':
-            table = main.calculador.calcular_IPAX(main.calculador.obtener_año_anterior(session['año'][0]), np.arange(
-                1, 13), session.get('idlineas'), False, 'agregadas' in session.get('config')).reset_index()
+            table = director.calculador.calcular_IPAX(session['inicio'][0], session['fin'][0], session.get(
+                'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'ikm':
-            table = main.calculador.calcular_IKM(main.calculador.obtener_año_anterior(session['año'][0]), np.arange(
-                1, 13), session.get('idlineas'), False, 'agregadas' in session.get('config')).reset_index()
+            table = director.calculador.calcular_IKM(session['inicio'][0], session['fin'][0], session.get(
+                'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'ipk':
-            table = main.calculador.calcular_IPK(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_IPK(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'rpk':
-            table = main.calculador.calcular_RPK(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_RPK(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'itm':
-            table = main.calculador.calcular_ITM(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_ITM(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'irt':
-            table = main.calculador.calcular_IRT(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_IRT(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'at_nac':
-            table = main.calculador.calcular_AT_Nac(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_AT_Nac(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 'at_loc':
-            table = main.calculador.calcular_AT_Loc(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_AT_Loc(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
         if ind == 't_plana':
-            table = main.calculador.calcular_T_Plana(session['inicio'][0]+'-01', session['fin'][0]+'-31', session.get(
+            table = director.calculador.calcular_T_Plana(session['inicio'][0], session['fin'][0], session.get(
                 'idlineas'), 'agregadas' in session.get('config')).reset_index()
 
         if not table.empty:
@@ -129,7 +142,7 @@ def create_figure(ind):
             new_labels = []
             for l in labels:
                 new_labels.append(
-                    main.calculador.tablas['2018']['Lineas'].loc[main.calculador.tablas['2018']['Lineas']['ID_LINEA'] == int(l)]['NOMBRE'].iloc[0])
+                    director.calculador.tablas['2018']['Lineas'].loc[director.calculador.tablas['2018']['Lineas']['ID_LINEA'] == int(l)]['NOMBRE'].iloc[0])
             axis.legend(handles, new_labels)
 
             axis.set_ylabel(axis.yaxis.get_label().get_text().upper())
@@ -146,4 +159,4 @@ def create_figure(ind):
 
 
 ***REMOVED***
-    app.run()
+    app.run(debug=True)
