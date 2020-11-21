@@ -17,13 +17,6 @@ from model.cargador import Cargador
 from model.calculador import Calculador
 
 
-***REMOVED***
-
-app.config['SECRET_KEY'] = "some_random"
-***REMOVED***
-***REMOVED***
-
-
 class Director():
 
     def setear_cargador(self, cargador):
@@ -35,6 +28,13 @@ class Director():
     def setear_calculador(self, calculador):
         self.calculador = calculador
         self.calculador.setear_tablas(self.tablas)
+
+
+***REMOVED***
+
+app.config['SECRET_KEY'] = "some_random"
+***REMOVED***
+***REMOVED***
 
 
 ***REMOVED***
@@ -78,6 +78,8 @@ def create_figure(ind):
     axis = fig.add_subplot(1, 1, 1)
 
     if session.get('idlineas'):
+        # files = os.listdir('./data/')
+
         files = os.listdir('./data/')
 
         director = Director()
@@ -159,4 +161,4 @@ def create_figure(ind):
 
 
 ***REMOVED***
-    app.run(debug=True)
+    app.run()

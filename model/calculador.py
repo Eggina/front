@@ -76,7 +76,6 @@ class Calculador:
             df['indicador'] = df.diff(periods=12)
         else:
             df['indicador'] = df.groupby(level=1).diff(periods=12)
-            print(df)
 
         df['indicador'] = df['indicador'] / \
             (df[variable['nombre']] - df['indicador'])
