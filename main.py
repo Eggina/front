@@ -1,5 +1,5 @@
 import io
-from flask import Flask, Response, render_template, request, session
+from flask import Flask, Response, render_template, request, session, _app_ctx_stack
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import dates as mdates
@@ -11,8 +11,9 @@ from time import strptime, strftime
 import seaborn as sns
 from model.calculador import Calculador
 
-from flask_sqlalchemy import SQLAlchemy
 import secrets
+from database import SessionLocal, engine
+***REMOVED***
 
 
 ***REMOVED***
@@ -20,9 +21,13 @@ import secrets
 app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 ***REMOVED***
 ***REMOVED***
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/data.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/data.db'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
+
+***REMOVED***
+***REMOVED***
 
 
 ***REMOVED***
@@ -35,11 +40,10 @@ db = SQLAlchemy(app)
 ***REMOVED***
         session['inicio'] = request.form.getlist('inicio')
         session['fin'] = request.form.getlist('fin')
-        print(session)
 
-    lineas = calculador.obtener_lineas(db)
-    fechas = [x[:7] for x in calculador.obtener_limites_fechas_validas(db)]
-    print(lineas)
+    lineas = calculador.obtener_lineas(app.session)
+    fechas = [x[:7]
+              for x in calculador.obtener_limites_fechas_validas(app.session)]
 
     return render_template('home.html', lineas=lineas, fechas_extremas=fechas, session=session)
 
@@ -72,60 +76,60 @@ def create_figure(ind):
 
         if ind == 'ipax':
             table = calculador.calcular_IPAX(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Evolución de pasajeros mensual'
             config['ylabel'] = '% cambio interanual'
             config['formatter'] = mticker.FuncFormatter(
                 lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'ikm':
             table = calculador.calcular_IKM(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Evolución de kilómetros mensual'
             config['ylabel'] = '% cambio interanual'
             config['formatter'] = mticker.FuncFormatter(
                 lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'ipk':
             table = calculador.calcular_IPK(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Pasajeros por kilómetro'
             config['ylabel'] = 'Pasajeros por km'
             config['formatter'] = mticker.ScalarFormatter()
         if ind == 'rpk':
             table = calculador.calcular_RPK(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Recaudación por kilómetro (sin compensaciones)'
             config['ylabel'] = '$ por km'
             config['formatter'] = mticker.ScalarFormatter()
         if ind == 'itm':
             table = calculador.calcular_ITM(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Tarifa media'
             config['ylabel'] = '$'
             config['formatter'] = mticker.ScalarFormatter()
         if ind == 'irt':
             table = calculador.calcular_IRT(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Rendimiento tarifario'
             config['ylabel'] = '% de tarifa plana'
             config['formatter'] = mticker.FuncFormatter(
                 lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'at_nac':
             table = calculador.calcular_AT_Nac(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Pasajeros con tarifa preferencial nacional'
             config['ylabel'] = '% pasajeros'
             config['formatter'] = mticker.FuncFormatter(
                 lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'at_loc':
             table = calculador.calcular_AT_Loc(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Pasajeros con tarifa preferencial local'
             config['ylabel'] = '% pasajeros'
             config['formatter'] = mticker.FuncFormatter(
                 lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 't_plana':
             table = calculador.calcular_T_Plana(
-                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), app.session).reset_index()
             config['title'] = 'Pasajeros pagando tarifa plana'
             config['ylabel'] = '% pasajeros'
             config['formatter'] = mticker.FuncFormatter(
@@ -149,7 +153,7 @@ def create_figure(ind):
 
             handles, labels = axis.get_legend_handles_labels()
             new_labels = []
-            lineas = calculador.obtener_lineas(db)
+            lineas = calculador.obtener_lineas(app.session)
             for l in labels:
                 for linea in lineas:
                     if l == linea[0]:
@@ -157,7 +161,7 @@ def create_figure(ind):
             axis.legend(handles, new_labels)
 
             axis.set_ylabel(config['ylabel'], rotation=0)
-            axis.yaxis.set_label_coords(-0.1,1.02)
+            axis.yaxis.set_label_coords(-0.1, 1.02)
             axis.set_title(config['title'])
             axis.yaxis.set_major_formatter(config['formatter'])
 
@@ -176,4 +180,4 @@ def create_figure(ind):
 
 
 ***REMOVED***
-    app.run()
+    app.run(debug=True)
