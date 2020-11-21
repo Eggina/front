@@ -1,4 +1,3 @@
 runtime: python38
-instance_class: F4_1G
 env_variables:
   FILES_PATH: "indicadoressube.appspot.com"

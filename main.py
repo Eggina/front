@@ -1,67 +1,50 @@
 import io
-***REMOVED***
-import sys
-import random
 from flask import Flask, Response, render_template, request, session
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import dates as mdates
 from matplotlib import ticker as mticker
 from matplotlib import pyplot as plt
-from matplotlib import dates as mdates
 
 from time import strptime, strftime
-import numpy as np
 ***REMOVED***
 import seaborn as sns
-from model.cargador import Cargador
 from model.calculador import Calculador
 
-
-class Director():
-
-    def setear_cargador(self, cargador):
-        self.cargador = cargador
-
-    def setear_tablas(self, tablas):
-        self.tablas = tablas
-
-    def setear_calculador(self, calculador):
-        self.calculador = calculador
-        self.calculador.setear_tablas(self.tablas)
+from flask_sqlalchemy import SQLAlchemy
+import secrets
 
 
 ***REMOVED***
 
-app.config['SECRET_KEY'] = "some_random"
+app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
 ***REMOVED***
 ***REMOVED***
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/data.db'
+
+db = SQLAlchemy(app)
 
 
 ***REMOVED***
 ***REMOVED***
 
-    # fs = gcsfs.GCSFileSystem()
-    # files = fs.ls(os.environ['FILES_PATH'])
-
-    files = os.listdir('./data/')
-
-    director = Director()
-    director.setear_cargador(Cargador())
-    director.setear_tablas(director.cargador.cargar_tablas(files))
-    director.setear_calculador(Calculador())
+    calculador = Calculador()
 
 ***REMOVED***
-        session['idlineas'] = [int(id)
-                               for id in request.form.getlist('lineas')]
+***REMOVED***
 ***REMOVED***
         session['inicio'] = request.form.getlist('inicio')
         session['fin'] = request.form.getlist('fin')
         print(session)
 
-    return render_template('home.html', director=director, session=session)
+    lineas = calculador.obtener_lineas(db)
+    fechas = [x[:7] for x in calculador.obtener_limites_fechas_validas(db)]
+    print(lineas)
+
+    return render_template('home.html', lineas=lineas, fechas_extremas=fechas, session=session)
 
 
-@app.route('/plot/<ind>')
+***REMOVED***
 ***REMOVED***
     fig = create_figure(ind)
     output = io.BytesIO()
@@ -71,83 +54,112 @@ app.config['SECRET_KEY'] = "some_random"
 
 def create_figure(ind):
 
-    # fs = gcsfs.GCSFileSystem()
-    # files = fs.ls(os.environ['FILES_PATH'])
-
     fig = Figure(figsize=(8.09, 5), tight_layout=True)
     axis = fig.add_subplot(1, 1, 1)
 
-    if session.get('idlineas'):
-        # files = os.listdir('./data/')
-
-        files = os.listdir('./data/')
-
-        director = Director()
-        director.setear_cargador(Cargador())
-        director.setear_tablas(director.cargador.cargar_tablas(files))
-        director.setear_calculador(Calculador())
+    if session.get('id_lineas'):
+        calculador = Calculador()
 
         table = pd.DataFrame()
 
+        id_lineas = session.get('id_lineas')
+        id_lineas = ['\"{}\"'.format(x) for x in id_lineas]
+
+        config = dict()
+        config['title'] = ''
+        config['ylabel'] = ''
+        config['formatter'] = None
+
         if ind == 'ipax':
-            table = director.calculador.calcular_IPAX(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_IPAX(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Evolución de pasajeros mensual'
+            config['ylabel'] = '% cambio interanual'
+            config['formatter'] = mticker.FuncFormatter(
+                lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'ikm':
-            table = director.calculador.calcular_IKM(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_IKM(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Evolución de kilómetros mensual'
+            config['ylabel'] = '% cambio interanual'
+            config['formatter'] = mticker.FuncFormatter(
+                lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'ipk':
-            table = director.calculador.calcular_IPK(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_IPK(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Pasajeros por kilómetro'
+            config['ylabel'] = 'Pasajeros por km'
+            config['formatter'] = mticker.ScalarFormatter()
         if ind == 'rpk':
-            table = director.calculador.calcular_RPK(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_RPK(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Recaudación por kilómetro (sin compensaciones)'
+            config['ylabel'] = '$ por km'
+            config['formatter'] = mticker.ScalarFormatter()
         if ind == 'itm':
-            table = director.calculador.calcular_ITM(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_ITM(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Tarifa media'
+            config['ylabel'] = '$'
+            config['formatter'] = mticker.ScalarFormatter()
         if ind == 'irt':
-            table = director.calculador.calcular_IRT(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_IRT(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Rendimiento tarifario'
+            config['ylabel'] = '% de tarifa plana'
+            config['formatter'] = mticker.FuncFormatter(
+                lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'at_nac':
-            table = director.calculador.calcular_AT_Nac(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_AT_Nac(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Pasajeros con tarifa preferencial nacional'
+            config['ylabel'] = '% pasajeros'
+            config['formatter'] = mticker.FuncFormatter(
+                lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 'at_loc':
-            table = director.calculador.calcular_AT_Loc(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_AT_Loc(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Pasajeros con tarifa preferencial local'
+            config['ylabel'] = '% pasajeros'
+            config['formatter'] = mticker.FuncFormatter(
+                lambda x, pos: '{:.1f}'.format(100*x))
         if ind == 't_plana':
-            table = director.calculador.calcular_T_Plana(session['inicio'][0], session['fin'][0], session.get(
-                'idlineas'), 'agregadas' in session.get('config')).reset_index()
+            table = calculador.calcular_T_Plana(
+                session['inicio'][0], session['fin'][0], id_lineas, 'agregadas' in session.get('config'), db).reset_index()
+            config['title'] = 'Pasajeros pagando tarifa plana'
+            config['ylabel'] = '% pasajeros'
+            config['formatter'] = mticker.FuncFormatter(
+                lambda x, pos: '{:.1f}'.format(100*x))
 
         if not table.empty:
-            custom_palette = sns.color_palette("Paired", len(session.get(
-                'idlineas')))
+            custom_palette = sns.color_palette(
+                "Paired", len(session.get('id_lineas')))
 
             if not 'agregadas' in session.get('config') and not 'agrupadas' in session.get('config'):
                 sns.lineplot(x=table.columns[0], y=table.columns[-1],
-                             data=table, hue=table.columns[1], ax=axis, legend="full", palette=custom_palette)
+                             data=table, hue=table.columns[1], ax=axis, legend="full", palette=custom_palette, marker='o')
             else:
                 sns.lineplot(
-                    x=table.columns[0], y=table.columns[-1], data=table, ax=axis, legend="full", palette=custom_palette)
+                    x=table.columns[0], y=table.columns[-1], data=table, ax=axis, legend="full", palette=custom_palette, marker='o')
 
-            if 'MES' in table.columns:
-                axis.xaxis.set_major_locator(mticker.MultipleLocator(3))
-                axis.xaxis.set_minor_locator(mticker.MultipleLocator(1))
-                axis.xaxis.set_major_formatter(mticker.FuncFormatter(
-                    lambda x, pos: '0' if (x < 1 or x > 12) else strftime('%b', strptime(str(int(x)), '%m'))))
-
-            if 'FECHA' in table.columns:
-                locator = mdates.AutoDateLocator(minticks=3, maxticks=7)
-                formatter = mdates.ConciseDateFormatter(locator)
-                axis.xaxis.set_major_locator(locator)
-                axis.xaxis.set_major_formatter(formatter)
+            locator = mdates.AutoDateLocator(minticks=3, maxticks=7)
+            formatter = mdates.ConciseDateFormatter(locator)
+            axis.xaxis.set_major_locator(locator)
+            axis.xaxis.set_major_formatter(formatter)
 
             handles, labels = axis.get_legend_handles_labels()
             new_labels = []
+            lineas = calculador.obtener_lineas(db)
             for l in labels:
-                new_labels.append(
-                    director.calculador.tablas['2018']['Lineas'].loc[director.calculador.tablas['2018']['Lineas']['ID_LINEA'] == int(l)]['NOMBRE'].iloc[0])
+                for linea in lineas:
+                    if l == linea[0]:
+                        new_labels.append(linea[1])
             axis.legend(handles, new_labels)
 
-            axis.set_ylabel(axis.yaxis.get_label().get_text().upper())
+            axis.set_ylabel(config['ylabel'], rotation=0)
+            axis.yaxis.set_label_coords(-0.1,1.02)
+            axis.set_title(config['title'])
+            axis.yaxis.set_major_formatter(config['formatter'])
 
             for tick in axis.xaxis.get_major_ticks():
                 tick.label.set_fontsize(15)
@@ -156,6 +168,9 @@ def create_figure(ind):
 
             axis.xaxis.label.set_size(15)
             axis.yaxis.label.set_size(15)
+
+            axis.spines['right'].set_visible(False)
+            axis.spines['top'].set_visible(False)
 
     return fig
 
