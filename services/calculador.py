@@ -39,52 +39,37 @@ class Calculador:
         df['fecha'] = df['fecha'].astype('datetime64[ns, UTC]')
         return df
 
-    def __calcular_Ix(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, variable, session):
-        f1, f2 = self.__procesar_fechas(
-            fecha_inicio, fecha_final)
+    def calcular_cambio_interanual(self, df, fecha_inicio, fecha_final):
+        f1, f2 = self.__procesar_fechas(fecha_inicio, fecha_final)
         meses = (f2.year - f1.year)*12 + (f2.month - f1.month)
         if (meses < 12):
             return pd.DataFrame()
 
-        if agregar_lineas:
-            var_list = ['fecha']
-            def func(df): return df
-        else:
-            var_list = ['fecha', 'id_linea']
+        if 'id_linea' in df.index.names:
             def func(df): return df.groupby(level=1)
+        else:
+            def func(df): return df
 
-        df = self.__load_dataframe(var_list, variable['nombre'], variable['tabla'], fecha_inicio, fecha_final, {
-                                   'id_linea': id_linea}, var_list, session)
-        df = df.set_index(var_list)
-        df['indicador'] = func(df).diff(periods=12)
-
+        variable = df.columns[-1]
+        df['indicador'] = func(df[[variable]]).diff(periods=12)
         df['indicador'] = df['indicador'] / \
-            (df['{}'.format(variable['nombre'])] - df['indicador'])
+            (df['{}'.format(variable)] - df['indicador'])
         return df.dropna()
 
-    def calcular_IPAX(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
-        df = self.__calcular_Ix(fecha_inicio, fecha_final, id_linea, agregar_lineas, {
-            'tabla': 'entrega_dggi_tarifa', 'nombre': 'cantidad_usos'}, session)
-        return df.rename(columns={'indicador': 'ipax'})
+    def calcular_IPAX(self, fecha_inicio, fecha_final, id_linea, indexes, session):
+        return self.__load_dataframe(indexes, 'cantidad_usos', 'entrega_dggi_tarifa', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes)
 
-    def calcular_IKM(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
-        df = self.__calcular_Ix(fecha_inicio, fecha_final, id_linea, agregar_lineas, {
-                                'tabla': 'entrega_dist_serv_fechaok', 'nombre': 'distancia_servicio_km'}, session)
-        return df.rename(columns={'indicador': 'ikm'})
+    def calcular_IKM(self, fecha_inicio, fecha_final, id_linea, indexes, session):
+        return self.__load_dataframe(indexes, 'distancia_servicio_km', 'entrega_dist_serv_fechaok', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes)
 
-    def __calcular_xPy(self, fecha_inicio, fecha_final, id_linea, variable_x, variable_y, agregar_lineas, session):
-        if agregar_lineas:
-            var_list = ['fecha']
-        else:
-            var_list = ['fecha', 'id_linea']
-
+    def __calcular_xPy(self, fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session):
         df_x = self.__load_dataframe(
-            var_list, variable_x['nombre'], variable_x['tabla'], fecha_inicio, fecha_final, variable_x['filters'], var_list, session)
-        df_x = df_x.set_index(var_list)
+            indexes, variable_x['nombre'], variable_x['tabla'], fecha_inicio, fecha_final, variable_x['filters'], indexes, session)
+        df_x = df_x.set_index(indexes)
 
         df_y = self.__load_dataframe(
-            var_list, variable_y['nombre'], variable_y['tabla'], fecha_inicio, fecha_final, variable_y['filters'], var_list, session)
-        df_y = df_y.set_index(var_list)
+            indexes, variable_y['nombre'], variable_y['tabla'], fecha_inicio, fecha_final, variable_y['filters'], indexes, session)
+        df_y = df_y.set_index(indexes)
 
         if variable_x['nombre'] == variable_y['nombre']:
             variable_x['nombre'] = variable_x['nombre'] + '_x'
@@ -95,36 +80,36 @@ class Calculador:
             df_xy[variable_y['nombre']]
         return df_xy
 
-    def calcular_IPK(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_IPK(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         variable_x = {'nombre': 'cantidad_usos',
                       'tabla': 'entrega_dggi_tarifa', 'filters': {'id_linea': id_linea}}
         variable_y = {'nombre': 'distancia_servicio_km',
                       'tabla': 'entrega_dist_serv_fechaok', 'filters': {'id_linea': id_linea}}
         df = self.__calcular_xPy(
-            fecha_inicio, fecha_final, id_linea, variable_x, variable_y, agregar_lineas, session)
+            fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session)
         return df.rename(columns={'indicador': 'ipk'})
 
-    def calcular_RPK(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_RPK(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         variable_x = {'nombre': 'monto', 'tabla': 'entrega_dggi_tarifa', 'filters': {
             'id_linea': id_linea}}
         variable_y = {'nombre': 'distancia_servicio_km',
                       'tabla': 'entrega_dist_serv_fechaok', 'filters': {'id_linea': id_linea}}
         df = self.__calcular_xPy(
-            fecha_inicio, fecha_final, id_linea, variable_x, variable_y, agregar_lineas, session)
+            fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session)
         return df.rename(columns={'indicador': 'rpk'})
 
-    def calcular_ITM(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_ITM(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         variable_x = {'nombre': 'monto', 'tabla': 'entrega_dggi_tarifa', 'filters': {
             'id_linea': id_linea}}
         variable_y = {'nombre': 'cantidad_usos',
                       'tabla': 'entrega_dggi_tarifa', 'filters': {'id_linea': id_linea}}
         df = self.__calcular_xPy(
-            fecha_inicio, fecha_final, id_linea, variable_x, variable_y, agregar_lineas, session)
+            fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session)
         return df.rename(columns={'indicador': 'itm'})
 
-    def calcular_IRT(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_IRT(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         df = self.calcular_ITM(fecha_inicio, fecha_final,
-                               id_linea, agregar_lineas, session)
+                               id_linea, indexes, session)
 
         tarifas = self.__load_dataframe(
             ['fecha'], 'valor', 'tarifa_plana', fecha_inicio, fecha_final, None, ['fecha'], session)
@@ -136,27 +121,27 @@ class Calculador:
         df['irt'] = df['itm']/df['tp']
         return df
 
-    def __calcular_AT(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, contratos, session):
+    def __calcular_AT(self, fecha_inicio, fecha_final, id_linea, indexes, contratos, session):
         variable_x = {'nombre': 'cantidad_usos', 'tabla': 'entrega_dggi_tarifa', 'filters': {
             'id_linea': id_linea, 'contrato': contratos}}
         variable_y = {'nombre': 'cantidad_usos',
                       'tabla': 'entrega_dggi_tarifa', 'filters': {'id_linea': id_linea}}
-        return self.__calcular_xPy(fecha_inicio, fecha_final, id_linea, variable_x, variable_y, agregar_lineas, session)
+        return self.__calcular_xPy(fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session)
 
-    def calcular_AT_Nac(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_AT_Nac(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         df = self.__calcular_AT(fecha_inicio, fecha_final,
-                                id_linea, agregar_lineas, ['\"621\"'], session)
+                                id_linea, indexes, ['\"621\"'], session)
         return df.rename(columns={'indicador': 'at_nac'})
 
-    def calcular_AT_Loc(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_AT_Loc(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         contratos = ['\"{}\"'.format(x) for x in range(521, 532)]
         df = self.__calcular_AT(fecha_inicio, fecha_final,
-                                id_linea, agregar_lineas, contratos, session)
+                                id_linea, indexes, contratos, session)
         return df.rename(columns={'indicador': 'at_loc'})
 
-    def calcular_T_Plana(self, fecha_inicio, fecha_final, id_linea, agregar_lineas, session):
+    def calcular_T_Plana(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         df = self.__calcular_AT(fecha_inicio, fecha_final,
-                                id_linea, agregar_lineas, ['\"602\"'], session)
+                                id_linea, indexes, ['\"602\"'], session)
         return df.rename(columns={'indicador': 't_plana'})
 
     def obtener_limites_fechas_validas(self, session):
@@ -172,25 +157,3 @@ class Calculador:
         df = pd.DataFrame(resoverall.fetchall())
         # pd.read_sql('SELECT id_linea, linea FROM lineas', session.engine).values
         return df.values
-
-
-***REMOVED***
-    calc = Calculador()
-    session = DataBase()
-    session.create_engine('sqlite:///data.session')
-    f1, f2 = ('2018-01', '2019-12')
-
-    agregar_lineas = True
-    id_linea = ['\"1225\"', '\"1233\"']
-
-    # print(calc.calcular_IPAX(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_IKM(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_IPK(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_RPK(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_ITM(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_IRT(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_AT_Nac(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_AT_Loc(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.calcular_T_Plana(f1, f2, id_linea, agregar_lineas, session))
-    # print(calc.obtener_limites_fechas_validas(session))
-    # print(calc.obtener_lineas(session))
