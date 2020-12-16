@@ -21,7 +21,7 @@ def create_figure(ind, db_session, session):
         table = pd.DataFrame()
 
         id_lineas = session.get('id_lineas')
-        id_lineas = ['\"{}\"'.format(x) for x in id_lineas]
+        id_lineas = ['\'{}\''.format(x) for x in id_lineas]
 
         config = dict()
         config['title'] = ''

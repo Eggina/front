@@ -1,9 +1,9 @@
 from flask import Flask, Response, render_template, request, session, _app_ctx_stack
-from time import strptime, strftime
-from database import db_session
+***REMOVED***
 from services.figures import create_figure
 from services.calculador import Calculador
-import secrets
+***REMOVED***
+***REMOVED***
 
 ***REMOVED***
 
@@ -12,13 +12,12 @@ app.config['SECRET_KEY'] = '1jAqXjc1hFqjas2ks5PoAw'
 ***REMOVED***
 
 ***REMOVED***
-***REMOVED***
+            'itm', 'irt', 'ianac', 'ialoc', 'itp']
 
+***REMOVED***SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
 
 ***REMOVED***
 ***REMOVED***
-    global db_session
-
     calculador = Calculador()
 
 ***REMOVED***
@@ -36,25 +35,25 @@ app.config['SECRET_KEY'] = '1jAqXjc1hFqjas2ks5PoAw'
 ***REMOVED***
 ***REMOVED***
 
-    lineas = calculador.obtener_lineas(db_session)
-    fechas = [x[:7]
-              for x in calculador.obtener_limites_fechas_validas(db_session)]
+    lineas = calculador.obtener_lineas(app.session)
+***REMOVED***
+        '%Y-%m') for x in calculador.obtener_limites_fechas_validas(app.session)]
+***REMOVED***
 ***REMOVED***
     return render_template('home.html', indicadores=indicadores, lineas=lineas, fechas_extremas=fechas, session=session)
 
 
 ***REMOVED***
 ***REMOVED***
-    global db_session
 ***REMOVED***
-    output = create_figure(ind, db_session, session)
+    output = create_figure(ind, app.session, session)
+***REMOVED***
 ***REMOVED***
 
 
 ***REMOVED***
 ***REMOVED***
-    db_session.remove()
-
+***REMOVED***
 
 ***REMOVED***
     app.run()

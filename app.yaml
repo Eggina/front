@@ -2,3 +2,7 @@ runtime: python38
 instance_class: F4_1G
 env_variables:
   FILES_PATH: "indicadoressube.appspot.com"
+  DB_USER: "read_only_datos_sube"
+  DB_PASS: "sudoku"
+  DB_NAME: "datos_sube"
+  CLOUD_SQL_CONNECTION_NAME: "indicadoressube:southamerica-east1:indicadoressube0"

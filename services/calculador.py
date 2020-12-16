@@ -19,8 +19,11 @@ class Calculador:
         config_str = ', SUM({}) AS {} FROM {} '.format(
             variable, variable, tabla)
 
-        fechas_str = 'WHERE fecha >= "{} 00:00:00" AND fecha <= "{} 23:59:59" '.format(
-            fecha_inicio.strftime("%Y-%m-%d"), fecha_final.strftime("%Y-%m-%d"))
+        # fechas_str = 'WHERE fecha >= "{} 00:00:00" AND fecha <= "{} 23:59:59" '.format(
+        #     fecha_inicio.strftime("%Y-%m-%d"), fecha_final.strftime("%Y-%m-%d"))
+
+        fechas_str = 'WHERE fecha BETWEEN \'{} 00:00:00\' AND \'{} 23:59:59\' '.format(
+            fecha_inicio.strftime('%Y-%m-%d'), fecha_final.strftime('%Y-%m-%d'))
 
         filters_str = ''
         if filters:
@@ -30,7 +33,8 @@ class Calculador:
 
         groups_str = 'GROUP BY ' + ', '.join(groups)
 
-        query = selects_str + config_str + fechas_str + filters_str + groups_str
+        query = selects_str + config_str + fechas_str + \
+            filters_str + groups_str + ' ORDER BY fecha'
 
         resoverall = session.execute(query)
         df = pd.DataFrame(resoverall.fetchall())
@@ -130,18 +134,18 @@ class Calculador:
 
     def calcular_AT_Nac(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         df = self.__calcular_AT(fecha_inicio, fecha_final,
-                                id_linea, indexes, ['\"621\"'], session)
+                                id_linea, indexes, ['\'621\''], session)
         return df.rename(columns={'indicador': 'at_nac'})
 
     def calcular_AT_Loc(self, fecha_inicio, fecha_final, id_linea, indexes, session):
-        contratos = ['\"{}\"'.format(x) for x in range(521, 532)]
+        contratos = ['\'{}\''.format(x) for x in range(521, 532)]
         df = self.__calcular_AT(fecha_inicio, fecha_final,
                                 id_linea, indexes, contratos, session)
         return df.rename(columns={'indicador': 'at_loc'})
 
     def calcular_T_Plana(self, fecha_inicio, fecha_final, id_linea, indexes, session):
         df = self.__calcular_AT(fecha_inicio, fecha_final,
-                                id_linea, indexes, ['\"602\"'], session)
+                                id_linea, indexes, ['\'602\''], session)
         return df.rename(columns={'indicador': 't_plana'})
 
     def obtener_limites_fechas_validas(self, session):
