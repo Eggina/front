@@ -12,9 +12,11 @@ app.config['SECRET_KEY'] = '1jAqXjc1hFqjas2ks5PoAw'
 ***REMOVED***
 
 ***REMOVED***
-            'itm', 'irt', 'ianac', 'ialoc', 'itp']
+***REMOVED***
 
-***REMOVED***SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
+***REMOVED***
+***REMOVED***
+
 
 ***REMOVED***
 ***REMOVED***
@@ -55,5 +57,6 @@ app.config['SECRET_KEY'] = '1jAqXjc1hFqjas2ks5PoAw'
 ***REMOVED***
 ***REMOVED***
 
+
 ***REMOVED***
-    app.run()
+    app.run(debug=True)
