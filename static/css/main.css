@@ -4,14 +4,152 @@
 }
 
 #sidebar {
-    min-width: 200px;
-    max-width: 200px;
+    min-width: 225px;
+    max-width: 225px;
     min-height: 100vh;
     transition: all 0.3s;
 }
 
 #sidebar.active {
-    margin-left: -200px;
+    margin-left: -225px;
+}
+
+.btn-circle {
+    border-radius: 50%;
+}
+
+
+/* The switch - the box around the slider */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 17px;
+}
+
+
+/* Hide default HTML checkbox */
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+
+/* The slider */
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #1751b8;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #0b295c;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #17f3b8;
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #17f3b8;
+}
+
+input:checked+.slider:before {
+    background-color: white;
+    -webkit-transform: translateX(43px);
+    -ms-transform: translateX(43px);
+    transform: translateX(43px);
+}
+
+.on {
+    display: none;
+    color: black;
+}
+
+.off {
+    color: white;
+}
+
+.on,
+.off {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    font-size: 10px;
+    font-family: Verdana, sans-serif;
+}
+
+input:checked+.slider .on {
+    display: block;
+}
+
+input:checked+.slider .off {
+    display: none;
+}
+
+
+/* Rounded sliders */
+
+.slider.round {
+    border-radius: 17px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.infolink::after {
+    content: '?';
+    display: inline-block;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 50%;
+    color: inherit;
+    border: 1px solid;
+    text-decoration: none;
+}
+
+.infolink.infolink-sm::after {
+    font-size: 0.7em;
+    line-height: 0.7em;
+    margin-left: 6px;
+    padding: 0.13em 0.2em 0.09em 0.2em;
+}
+
+.infolink.infolink-md::after {
+    font-size: 1.4em;
+    line-height: 1.4em;
+    margin-left: 6px;
+    padding: 0.26em 0.7em 0.18em 0.7em;
+}
+
+.infolink:hover::after {
+    background-color: #17a2b8;
+    color: white;
+}
+
+label>small {
+    font-size: small;
 }
 
 @media (max-width: 768px) {

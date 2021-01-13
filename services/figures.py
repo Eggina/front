@@ -10,13 +10,36 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from .calculador import Calculador
 
 
-def create_figure(ind, db_session, session):
+def setup_indicadores(indicadores):
+    indicadores['ipax']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:,}'.format(int(x)).replace(',', '.'))
+    indicadores['ikm']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:,}'.format(int(x)).replace(',', '.'))
+    indicadores['ipk']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.3f}'.format(x))
+    indicadores['rpk']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.2f}'.format(x))
+    indicadores['itm']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.2f}'.format(x))
+    indicadores['irt']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.1f}'.format(100*x))
+    indicadores['ianac']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.1f}'.format(100*x))
+    indicadores['ialoc']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.1f}'.format(100*x))
+    indicadores['itp']['formatter'] = mticker.FuncFormatter(
+        lambda x, pos: '{:.1f}'.format(100*x))
+    return indicadores
 
-    fig = Figure(figsize=(8.09, 5), tight_layout=True)
+
+def create_figure(ind, db_session, session, indicadores):
+
+    fig = Figure(figsize=(10, 5), tight_layout=True)
     axis = fig.add_subplot(1, 1, 1)
 
+    calculador = Calculador()
+
     if session.get('id_lineas'):
-        calculador = Calculador()
 
         table = pd.DataFrame()
 
@@ -33,71 +56,29 @@ def create_figure(ind, db_session, session):
         else:
             indexes = ['fecha', 'id_linea']
 
-        if ind == 'ipax':
-            table = calculador.calcular_IPAX(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Cantidad de pasajeros'
-            config['ylabel'] = 'Pasajeros'
-            config['formatter'] = mticker.ScalarFormatter()
-        if ind == 'ikm':
-            table = calculador.calcular_IKM(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Distancia recorrida'
-            config['ylabel'] = 'km'
-            config['formatter'] = mticker.ScalarFormatter()
-        if ind == 'ipk':
-            table = calculador.calcular_IPK(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Pasajeros por kilómetro'
-            config['ylabel'] = 'Pasajeros por km'
-            config['formatter'] = mticker.ScalarFormatter()
-        if ind == 'rpk':
-            table = calculador.calcular_RPK(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Recaudación por kilómetro (sin compensaciones)'
-            config['ylabel'] = '$ por km'
-            config['formatter'] = mticker.ScalarFormatter()
-        if ind == 'itm':
-            table = calculador.calcular_ITM(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Tarifa media'
-            config['ylabel'] = '$'
-            config['formatter'] = mticker.ScalarFormatter()
-        if ind == 'irt':
-            table = calculador.calcular_IRT(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Rendimiento tarifario'
-            config['ylabel'] = '% de tarifa plana'
-            config['formatter'] = mticker.FuncFormatter(
-                lambda x, pos: '{:.1f}'.format(100*x))
-        if ind == 'ianac':
-            table = calculador.calcular_AT_Nac(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Pasajeros con tarifa preferencial nacional'
-            config['ylabel'] = '% pasajeros'
-            config['formatter'] = mticker.FuncFormatter(
-                lambda x, pos: '{:.1f}'.format(100*x))
-        if ind == 'ialoc':
-            table = calculador.calcular_AT_Loc(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Pasajeros con tarifa preferencial local'
-            config['ylabel'] = '% pasajeros'
-            config['formatter'] = mticker.FuncFormatter(
-                lambda x, pos: '{:.1f}'.format(100*x))
-        if ind == 'itp':
-            table = calculador.calcular_T_Plana(
-                session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
-            config['title'] = 'Pasajeros pagando tarifa plana'
-            config['ylabel'] = '% pasajeros'
-            config['formatter'] = mticker.FuncFormatter(
-                lambda x, pos: '{:.1f}'.format(100*x))
+        table = indicadores[ind]['fun'](
+            session['fecha']['inicio'][0], session['fecha']['fin'][0], id_lineas, indexes, db_session)
+        config['title'] = indicadores[ind]['title']
+        config['ylabel'] = indicadores[ind]['ylabel']
+        config['formatter'] = indicadores[ind]['formatter']
+        config['alarm1'] = indicadores[ind]['alarm1']
+        config['alarm2'] = indicadores[ind]['alarm2']
+        config['ylim'] = indicadores[ind]['ylim']
+        config['alarm1_enable'] = indicadores[ind]['alarm1_enable']
+        config['alarm2_enable'] = indicadores[ind]['alarm2_enable']
 
         if 'cambio' in session['indicadores'][ind]:
             table = calculador.calcular_cambio_interanual(
                 table, session['fecha']['inicio'][0], session['fecha']['fin'][0]).reset_index()
-            config['ylabel'] = '% cambio interanual'
+            config['title'] = indicadores[ind]['alt_title']
+            config['ylabel'] = '%'
             config['formatter'] = mticker.FuncFormatter(
                 lambda x, pos: '{:.1f}'.format(100*x))
+            config['alarm1'] = indicadores[ind]['alt_alarm1']
+            config['alarm2'] = indicadores[ind]['alt_alarm2']
+            config['ylim'] = indicadores[ind]['alt_ylim']
+            config['alarm1_enable'] = indicadores[ind]['alt_alarm1_enable']
+            config['alarm2_enable'] = indicadores[ind]['alt_alarm2_enable']
         else:
             table = table.reset_index()
 
@@ -111,6 +92,9 @@ def create_figure(ind, db_session, session):
             else:
                 sns.lineplot(
                     x=table.columns[0], y=table.columns[-1], data=table, ax=axis, legend="full", palette=custom_palette, marker='o')
+
+            if config['ylim'][0] < config['ylim'][1]:
+                axis.set_ylim(config['ylim'])
 
             locator = mdates.AutoDateLocator(minticks=3, maxticks=7)
             formatter = mdates.ConciseDateFormatter(locator)
@@ -141,6 +125,19 @@ def create_figure(ind, db_session, session):
 
             axis.spines['right'].set_visible(False)
             axis.spines['top'].set_visible(False)
+
+            ylims = axis.get_ylim()
+
+            if config['alarm1_enable'] != 0:
+                alarm1 = [0, 0]
+                alarm1[0] = ylims[0] if ylims[0] > config['alarm1'][0] else ylims[1] if ylims[1] < config['alarm1'][0] else config['alarm1'][0]
+                alarm1[1] = ylims[1] if ylims[1] < config['alarm1'][1] else ylims[0] if ylims[0] > config['alarm1'][1] else config['alarm1'][1]
+                axis.axhspan(alarm1[0], alarm1[1], facecolor='g', alpha=0.125)
+            if config['alarm2_enable'] != 0:
+                alarm2 = [0, 0]
+                alarm2[0] = ylims[0] if ylims[0] > config['alarm2'][0] else ylims[1] if ylims[1] < config['alarm2'][0] else config['alarm2'][0]
+                alarm2[1] = ylims[1] if ylims[1] < config['alarm2'][1] else ylims[0] if ylims[0] > config['alarm2'][1] else config['alarm2'][1]
+                axis.axhspan(alarm2[0], alarm2[1], facecolor='r', alpha=0.125)
 
     output = io.BytesIO()
     FigureCanvas(fig).print_png(output)

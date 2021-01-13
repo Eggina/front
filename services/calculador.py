@@ -64,7 +64,7 @@ class Calculador:
         return self.__load_dataframe(indexes, 'cantidad_usos', 'entrega_dggi_tarifa', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes)
 
     def calcular_IKM(self, fecha_inicio, fecha_final, id_linea, indexes, session):
-        return self.__load_dataframe(indexes, 'distancia_servicio_km', 'entrega_dist_serv_fechaok', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes)
+        return self.__load_dataframe(indexes, 'distancia_servicio_km', 'entrega_dist_serv_fechaok', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes).sort_values(['fecha', 'id_linea'])
 
     def __calcular_xPy(self, fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session):
         df_x = self.__load_dataframe(
@@ -161,3 +161,26 @@ class Calculador:
         df = pd.DataFrame(resoverall.fetchall())
         # pd.read_sql('SELECT id_linea, linea FROM lineas', session.engine).values
         return df.values
+
+
+def setup_indicadores(indicadores):
+    calculador = Calculador()
+    indicadores['ipax']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_IPAX(
+        a0, a1, a2, a3, a4)
+    indicadores['ikm']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_IKM(
+        a0, a1, a2, a3, a4)
+    indicadores['ipk']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_IPK(
+        a0, a1, a2, a3, a4)
+    indicadores['rpk']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_RPK(
+        a0, a1, a2, a3, a4)
+    indicadores['itm']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_ITM(
+        a0, a1, a2, a3, a4)
+    indicadores['irt']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_IRT(
+        a0, a1, a2, a3, a4)
+    indicadores['ianac']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_AT_Nac(
+        a0, a1, a2, a3, a4)
+    indicadores['ialoc']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_AT_Loc(
+        a0, a1, a2, a3, a4)
+    indicadores['itp']['fun'] = lambda a0, a1, a2, a3, a4: calculador.calcular_T_Plana(
+        a0, a1, a2, a3, a4)
+    return indicadores
