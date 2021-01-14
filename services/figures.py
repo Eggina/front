@@ -111,8 +111,8 @@ def create_figure(ind, db_session, session, indicadores):
             axis.legend(handles, new_labels)
 
             axis.set_ylabel(config['ylabel'], rotation=0)
-            axis.yaxis.set_label_coords(-0.1, 1.02)
-            axis.set_title(config['title'])
+            axis.yaxis.set_label_coords(0, 1.025)
+            axis.set_title(config['title'], fontsize="xx-large")
             axis.yaxis.set_major_formatter(config['formatter'])
 
             for tick in axis.xaxis.get_major_ticks():

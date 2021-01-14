@@ -49,7 +49,6 @@ app.config['SECRET_KEY'] = '1jAqXjc1hFqjas2ks5PoAw'
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
-        print(session)
 
 ***REMOVED***
 ***REMOVED***
@@ -73,4 +72,4 @@ app.config['SECRET_KEY'] = '1jAqXjc1hFqjas2ks5PoAw'
 
 
 ***REMOVED***
-    app.run(debug=True)
+    app.run(debug=False)

@@ -119,28 +119,31 @@ input:checked+.slider .off {
 
 .infolink::after {
     content: '?';
+    border-radius: 50%;
     display: inline-block;
     font-family: sans-serif;
     font-weight: bold;
     text-align: center;
-    border-radius: 50%;
     color: inherit;
     border: 1px solid;
     text-decoration: none;
+    margin-left: 6px;
 }
 
 .infolink.infolink-sm::after {
+    line-height: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    padding: 0.3em;
     font-size: 0.7em;
-    line-height: 0.7em;
-    margin-left: 6px;
-    padding: 0.13em 0.2em 0.09em 0.2em;
 }
 
 .infolink.infolink-md::after {
+    line-height: 100%;
+    width: 2em;
+    height: 2em;
+    padding: 0.5em;
     font-size: 1.4em;
-    line-height: 1.4em;
-    margin-left: 6px;
-    padding: 0.26em 0.7em 0.18em 0.7em;
 }
 
 .infolink:hover::after {
@@ -154,7 +157,7 @@ label>small {
 
 @media (max-width: 768px) {
     #sidebar {
-        margin-left: -200px;
+        margin-left: -225px;
     }
     #sidebar.active {
         margin-left: 0;
