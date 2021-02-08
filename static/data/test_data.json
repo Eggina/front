@@ -1,0 +1,318 @@
+{
+    "indicadores": [{
+            "id": "ipax",
+            "nombre": "PAX",
+            "descripcion": "Suma total de los pasajeros transportados que pagaron tarifa o registraron su viaje mediante boleto electrónico.",
+            "title": "Pax mes",
+            "alt_title": "IPAX",
+            "ylabel": "Pax",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 1,
+            "alt_alarm2_enable": 1,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0.04,
+                10
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [-10, -0.04],
+            "ylim": [
+                0,
+                0
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "ikm",
+            "nombre": "KM",
+            "descripcion": "Suma total de los kilómetros producidos.",
+            "title": "km mes",
+            "alt_title": "IKM",
+            "ylabel": "km",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 1,
+            "alt_alarm2_enable": 1,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0.04,
+                10
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [-10, -0.04],
+            "ylim": [
+                0,
+                0
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "ipk",
+            "nombre": "IPK",
+            "descripcion": "Razón entre pasajeros transportados y la sumatoria de km recorridos.",
+            "title": "IPK",
+            "ylabel": "IPK",
+            "alt_title": "IPK",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 1,
+            "alt_alarm2_enable": 1,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0.04,
+                10
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [-10, -0.04],
+            "ylim": [
+                0,
+                0
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "rpk",
+            "nombre": "RPK",
+            "descripcion": "Razón entre la recaudación total y la sumatoria de km recorridos.",
+            "title": "RPK",
+            "ylabel": "$/km",
+            "alt_title": "RPK",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 0,
+            "alt_alarm2_enable": 0,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0,
+                0
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [
+                0,
+                0
+            ],
+            "ylim": [
+                0,
+                0
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "itm",
+            "nombre": "ITM",
+            "descripcion": "Tarifa equivalente que pagarían todos los usuarios de existir un solo valor en el cuadro tarifario.",
+            "title": "ITM",
+            "ylabel": "$",
+            "alt_title": "ITM",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 0,
+            "alt_alarm2_enable": 0,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0,
+                0
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [
+                0,
+                0
+            ],
+            "ylim": [
+                0,
+                0
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "irt",
+            "nombre": "IRT",
+            "descripcion": "Relación entre la Tarifa Media y la Tarifa Plana.",
+            "title": "IRT",
+            "ylabel": "% T. Plana",
+            "alt_title": "IRT",
+            "alarm1_enable": 0,
+            "alarm2_enable": 1,
+            "alt_alarm1_enable": 0,
+            "alt_alarm2_enable": 0,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0,
+                0
+            ],
+            "alarm2": [
+                0,
+                0.25
+            ],
+            "alt_alarm2": [
+                0,
+                0
+            ],
+            "ylim": [
+                0,
+                1
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "ianac",
+            "nombre": "ATS NAC",
+            "descripcion": "Proporción de pasajeros que accedieron al sistema abonando con tarifa preferencial o descuento de origen nacional.",
+            "title": "ATS Nac",
+            "ylabel": "% Pax",
+            "alt_title": "ATS Nac",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 0,
+            "alt_alarm2_enable": 0,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0,
+                0
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [
+                0,
+                0
+            ],
+            "ylim": [
+                0,
+                1
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "ialoc",
+            "nombre": "ATS LOC",
+            "descripcion": "Proporción de pasajeros que accedieron al sistema abonando con tarifa preferencial o descuento de origen local o municipal.",
+            "title": "ATS Loc",
+            "ylabel": "% Pax",
+            "alt_title": "ATS Loc",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 0,
+            "alt_alarm2_enable": 0,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0,
+                0
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [
+                0,
+                0
+            ],
+            "ylim": [
+                0,
+                1
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        },
+        {
+            "id": "itp",
+            "nombre": "T PLANA",
+            "descripcion": "Proporción de pasajeros que accedieron al sistema abonando con tarifa plana.",
+            "title": "T. Plana",
+            "ylabel": "% Pax",
+            "alt_title": "T. Plana",
+            "alarm1_enable": 0,
+            "alarm2_enable": 0,
+            "alt_alarm1_enable": 0,
+            "alt_alarm2_enable": 0,
+            "alarm1": [
+                0,
+                0
+            ],
+            "alt_alarm1": [
+                0,
+                0
+            ],
+            "alarm2": [
+                0,
+                0
+            ],
+            "alt_alarm2": [
+                0,
+                0
+            ],
+            "ylim": [
+                0,
+                1
+            ],
+            "alt_ylim": [
+                0,
+                0
+            ]
+        }
+    ]
+}
