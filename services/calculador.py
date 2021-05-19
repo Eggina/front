@@ -64,7 +64,7 @@ class Calculador:
         return self.__load_dataframe(indexes, 'cantidad_usos', 'entrega_dggi_tarifa', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes)
 
     def calcular_IKM(self, fecha_inicio, fecha_final, id_linea, indexes, session):
-        return self.__load_dataframe(indexes, 'distancia_servicio_km', 'entrega_dist_serv_fechaok', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes).sort_values(['fecha', 'id_linea'])
+        return self.__load_dataframe(indexes, 'distancia_servicio_km', 'entrega_dist_serv_fechaok', fecha_inicio, fecha_final, {'id_linea': id_linea}, indexes, session).set_index(indexes).sort_values(indexes)
 
     def __calcular_xPy(self, fecha_inicio, fecha_final, id_linea, variable_x, variable_y, indexes, session):
         df_x = self.__load_dataframe(
