@@ -1,4 +1,5 @@
 ***REMOVED***
+from sqlalchemy.sql import text
 from calendar import monthrange
 
 
@@ -33,14 +34,15 @@ class Calculador:
 
         groups_str = 'GROUP BY ' + ', '.join(groups)
 
-        query = selects_str + config_str + fechas_str + \
-            filters_str + groups_str + ' ORDER BY fecha'
+        query = text(selects_str + config_str + fechas_str + \
+            filters_str + groups_str + ' ORDER BY fecha')
 
         resoverall = session.execute(query)
         df = pd.DataFrame(resoverall.fetchall())
         df.columns = resoverall.keys()
         # df = pd.read_sql(query, session.engine)
-        df['fecha'] = df['fecha'].astype('datetime64[ns, UTC]')
+        #print(df['fecha'])
+        #df['fecha'] = df['fecha'].dt.tz_localize('UTC')
         return df
 
     def calcular_cambio_interanual(self, df, fecha_inicio, fecha_final):
@@ -149,14 +151,14 @@ class Calculador:
         return df.rename(columns={'indicador': 't_plana'})
 
     def obtener_limites_fechas_validas(self, session):
-        query = 'SELECT MIN(FECHA) AS fecha_min, MAX(FECHA) AS fecha_max FROM entrega_dggi_tarifa'
+        query = text('SELECT MIN(FECHA) AS fecha_min, MAX(FECHA) AS fecha_max FROM entrega_dggi_tarifa')
         resoverall = session.execute(query)
         df = pd.DataFrame(resoverall.fetchall())
         # pd.read_sql('SELECT MIN(FECHA) AS fecha_min, MAX(FECHA) AS fecha_max FROM entrega_dggi_tarifa', session.engine).values[0]
         return df.values[0]
 
     def obtener_lineas(self, session):
-        query = 'SELECT id_linea, linea FROM lineas'
+        query = text('SELECT id_linea, linea FROM lineas')
         resoverall = session.execute(query)
         df = pd.DataFrame(resoverall.fetchall())
         # pd.read_sql('SELECT id_linea, linea FROM lineas', session.engine).values

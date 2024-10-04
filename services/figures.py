@@ -115,10 +115,11 @@ def create_figure(ind, db_session, session, indicadores):
             axis.set_title(config['title'], fontsize="xx-large")
             axis.yaxis.set_major_formatter(config['formatter'])
 
-            for tick in axis.xaxis.get_major_ticks():
-                tick.label.set_fontsize(15)
-            for tick in axis.yaxis.get_major_ticks():
-                tick.label.set_fontsize(15)
+            axis.tick_params(axis='both', which='major', labelsize=15)
+            #for tick in axis.xaxis.get_major_ticks():
+            #    tick.label.set_fontsize(15)
+            #for tick in axis.yaxis.get_major_ticks():
+            #    tick.label.set_fontsize(15)
 
             axis.xaxis.label.set_size(15)
             axis.yaxis.label.set_size(15)
