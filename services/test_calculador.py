@@ -2,7 +2,7 @@ from calculador import Calculador
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-***REMOVED***
+if __name__ == '__main__':
     calc = Calculador()
     SQLALCHEMY_DATABASE_URL = 'postgresql://read_only_datos_sube:sudoku@localhost:5432/datos_sube'
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
